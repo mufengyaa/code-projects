@@ -1,0 +1,297 @@
+#include<iostream>
+#include<vector>
+#include<string>
+#include <algorithm>
+#include<cstdlib>
+using namespace std;
+
+struct Term {
+    int coeff;
+    int exp;
+};
+bool compare(const Term& a, const Term& b) {
+    return a.exp < b.exp;
+}
+void scanf_simple(vector<Term>& ans) {
+    int n;
+    cout << "请输入要计算的多项式个数:";
+    cin >> n;
+    cout << endl;
+    cout << "请输入多项式(以括号直接相连):";
+    for (int i = 0; i < n; i++) {
+        int coeff, exp;
+        char c;
+        cin >> c >> coeff >> c >> exp >> c;
+        ans.push_back({ coeff, exp });
+    }
+}
+void scanf_double(vector<Term>& poly1, vector<Term>& poly2) {
+    int n;
+    cout << "请输入要计算的第一个多项式个数:";
+    cin >> n;
+    cout << endl;
+    cout << "请输入多项式(以括号直接相连):";
+    for (int i = 0; i < n; i++) {
+        int coeff, exp;
+        char c;
+        cin >> c >> coeff >> c >> exp >> c;
+        poly1.push_back({ coeff, exp });
+    }
+    int m;
+    cout << "请输入要计算的第二个多项式个数:";
+    cin >> m;
+    cout << endl;
+    cout << "请输入多项式(以括号直接相连):";
+    for (int i = 0; i < m; i++) {
+        int coeff, exp;
+        char c;
+        cin >> c >> coeff >> c >> exp >> c;
+        poly2.push_back({ coeff, exp });
+    }
+    sort(poly1.begin(), poly1.end(), compare);
+    sort(poly2.begin(), poly2.end(), compare);
+}
+void cal(vector<Term>& ans) {
+    cout << "是否计算出具体数值(1/0):";
+    bool flag = false;
+    cin >> flag;
+    cout << endl;
+    if (flag == 1) {
+        cout << "若是, 请输入x的值:";
+        int x = 0;
+        cin >> x;
+        cout << endl;
+        int res = 0;
+        for (auto tmp : ans) {
+            int t = 1;
+            for (int i = 0; i < tmp.exp; i++) {
+                t *= x;
+            }
+            t *= tmp.coeff;
+            res += t;
+        }
+        cout <<"您要计算的结果为:" << res << endl;
+    }
+}
+void menu_start()
+{
+    cout << "****************************************************" << endl;
+    cout << "*****************1:进入计算     0:退出**************" << endl;
+    cout << "****************************************************" << endl;
+}
+void menu_select() {
+    cout << "****************************************************" << endl;
+    cout << "************1:单个计算          2:加法**************" << endl;
+    cout << "************3:减法              4:乘法**************" << endl;
+    cout << "************5:求导              6:返回**************" << endl;
+    cout << "****************************************************" << endl;
+}
+void print(vector<Term>& ans) {
+    cout << "多项式结果:";
+    bool first = true;
+    for (const Term& term : ans) {
+        int coeff = term.coeff;
+        int exp = term.exp;
+        if (coeff != 0) {
+            if (first) {
+                first = false;
+                if (coeff < 0) {
+                    cout << "-";
+                }
+            }
+            else {
+                if (coeff > 0) {
+                    cout << "+";
+                }
+            }
+            if (exp == 0) {
+                cout << coeff;
+            }
+            else if (exp == 1) {
+                if (abs(coeff) != 1) {
+                    cout << coeff;
+                }
+                cout << "X";
+            }
+            else {
+                if (abs(coeff) != 1) {
+                    cout << coeff;
+                }
+                cout << "X^" << exp;
+            }
+        }
+    }
+    int flag = 0;
+    for (auto tmp : ans) {
+        if (tmp.coeff != 0) {
+            flag = 1;
+        }
+    }
+    if (flag == 0) {
+        cout << "0";
+    }
+    cout << endl;
+}
+void simple(vector<Term>& ans) {
+    scanf_simple(ans);
+    sort(ans.begin(), ans.end(), compare);
+    print(ans);
+}
+void add(vector<Term>& ans, vector<Term>& poly1, vector<Term>& poly2) {
+    scanf_double(poly1, poly2);
+    int i = 0, j = 0;
+    while (i < poly1.size() && j < poly2.size()) {
+        if (poly1[i].exp < poly2[j].exp) {
+            ans.push_back(poly1[i]);
+            i++;
+        }
+        else if (poly1[i].exp > poly2[j].exp) {
+            ans.push_back(poly2[j]);
+            j++;
+        }
+        else {
+            int sumCoeff = poly1[i].coeff + poly2[j].coeff;
+            if (sumCoeff != 0) {
+                ans.push_back({ sumCoeff, poly1[i].exp });
+            }
+            i++;
+            j++;
+        }
+    }
+    while (i < poly1.size()) {
+        ans.push_back(poly1[i]);
+        i++;
+    }
+    while (j < poly2.size()) {
+        ans.push_back(poly2[j]);
+        j++;
+    }
+    print(ans);
+}
+void dec(vector<Term>& ans, vector<Term>& poly1, vector<Term>& poly2) {
+    scanf_double(poly1, poly2);
+    int i = 0, j = 0;
+    while (i < poly1.size() && j < poly2.size()) {
+        if (poly1[i].exp < poly2[j].exp) {
+            ans.push_back(poly1[i]);
+            i++;
+        }
+        else if (poly1[i].exp > poly2[j].exp) {
+            ans.push_back({ -poly2[j].coeff,poly2[j].exp });
+            j++;
+        }
+        else {
+            int decCoeff = poly1[i].coeff - poly2[j].coeff;
+            if (decCoeff != 0) {
+                ans.push_back({ decCoeff, poly1[i].exp });
+            }
+            i++;
+            j++;
+        }
+    }
+    while (i < poly1.size()) {
+        ans.push_back(poly1[i]);
+        i++;
+    }
+    while (j < poly2.size()) {
+        ans.push_back({ -poly2[j].coeff,poly2[j].exp });
+        j++;
+    }
+    print(ans);
+}
+void mul(vector<Term>& ans, vector<Term>& poly1, vector<Term>& poly2) {
+    scanf_double(poly1, poly2);
+    for (const Term& term1 : poly1) {
+        for (const Term& term2 : poly2) {
+            int coeff = term1.coeff * term2.coeff;
+            int exp = term1.exp + term2.exp;
+            ans.push_back({ coeff, exp });
+        }
+    }
+    sort(ans.begin(), ans.end(), compare);
+    for (int i = 0; i < ans.size() - 1; ++i) {
+        if (ans[i].exp == ans[i + 1].exp) {
+            int coeff = ans[i].coeff + ans[i + 1].coeff;
+            int exp = ans[i].exp;
+            auto j = ans.begin() + i;
+            j = ans.erase(j);
+            ans.erase(j);
+            ans.push_back({ coeff, exp });
+        }
+        sort(ans.begin(), ans.end(), compare);
+    }
+    print(ans);
+}
+void Derivative(vector<Term>& ans) {
+    scanf_simple(ans);
+    int res = 0;
+    for (auto& tmp : ans) {
+        int coeff = tmp.coeff * tmp.exp;
+        tmp.exp--;
+        tmp.coeff = coeff;
+    }
+    print(ans);
+}
+void calculate() {
+    int flag = 0;
+    do
+    {
+        cin.clear();
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        menu_select();
+        vector<Term> ans;
+        vector<Term> t1,t2;
+        cin >> flag;
+        switch (flag)
+        {
+        case 1:
+            simple(ans);
+            cal(ans);
+            break;
+        case 2:
+            add(ans,t1,t2);
+            cal(ans);
+            break;
+        case 3:
+            dec(ans, t1, t2);
+            cal(ans);
+            break;
+        case 4:
+            mul(ans, t1, t2);
+            cal(ans);
+            break;
+        case 5:
+            Derivative(ans);
+            cal(ans);
+            break;
+        case 6:
+            break;
+        default:
+            cout << "请重新输入" << endl;
+        }
+    } while (flag != 6);
+}
+int main() {
+	int flag = 0;
+	do
+	{
+        system("cls");
+        menu_start();
+		cin >> flag;
+		switch (flag)
+		{
+		case 1:
+            calculate();           
+			break;
+		case 0:
+            cout << "退出" << endl;
+			break;
+		default:
+            cout << "请重新输入" << endl;
+            cin.clear();
+            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		}
+	} while (flag);
+	return 0;
+}
